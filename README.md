@@ -2,6 +2,8 @@ A alarm clock made with a Raspberry Pi Zero 2W, a screen, and a USB Speaker
 
 With this alarm clock you can set as many alarms as you want, with as low as 1 second between them, and also have it play any song you want when it goes off.
 
+Put the scripts in your home directory in a folder named alarm for it to work.
+
 3d print files: www.thingiverse.com/thing:7062267
 
 Screen driver I used: https://github.com/SirLefti/Python_ILI9486/tree/main

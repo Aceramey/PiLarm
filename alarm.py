@@ -12,10 +12,10 @@ from decimal import Decimal
 import os
 import signal
 
-if os.path.exists("files") == False:
-    os.mkdir("files")
-    os.mkdir("files/audio")
-    subprocess.Popen(["touch", "files/alarms.txt"])
+if os.path.exists(f"/home/{os.getlogin()}/alarm/files") == False:
+    os.mkdir(f"/home/{os.getlogin()}/alarm/files")
+    os.mkdir(f"/home/{os.getlogin()}/alarm/files/audio")
+    subprocess.Popen(["touch", f"/home/{os.getlogin()}/alarm/files/alarms.txt"])
 
 #alarm format: 05-07-2025 05:00 PM
 
@@ -42,9 +42,10 @@ print(ip)
 currentTime = ""
 activeAlarms = 0
 alarmActive = False
-initialVolume = Decimal("0.7")
+initialVolume = Decimal("0.4")
 volume = initialVolume
 music_pid = 0
+foundSongs = False
 
 def updateScreen(active, nextAlarm):
     global check_speaker
@@ -64,18 +65,20 @@ def updateScreen(active, nextAlarm):
     if "Media-Player" not in os.popen("lsusb").read():
         draw.text((0, 100), "Speaker not detected!!!", font=fontMedium, align="left")
         draw.text((0, 140), "Please plug it in, or unplug and plug it in again", font=fontSmall, align="left")
-    if len(os.listdir("files/audio")) == 0:
+    if len(os.listdir(f"/home/{os.getlogin()}/alarm/files/audio")) < 1:
         draw.text((0, 180), "No audio found in files/audio", font=fontSmall, align="left")
         draw.text((0, 200), "please put some music in there", font=fontSmall, align="left")
+        draw.text((0, 220), "Or alarms will not play any music.", font=fontSmall, align="left")
     if active:
         draw.text((0, 100), "WAKE UP!!!!!!", font=font, align="left")
-        draw.text((0, 280), f"volume:{volume}", font=fontSmall, align="left")
+        if foundSongs == True:
+            draw.text((0, 280), f"volume:{volume}", font=fontSmall, align="left")
     lcd.display(image)
     print(f"display updated at {datetime.now().strftime('%d-%m-%Y %I:%M %p')}")
 
 while True:
     now = datetime.now().strftime("%I:%M %p")
-    file = open("/home/cooper/alarm/files/alarms.txt", "r")
+    file = open(f"/home/{os.getlogin()}/alarm/files/alarms.txt", "r")
     times = []
     for line in file:
         line = line[:-1]
@@ -96,19 +99,23 @@ while True:
     if len(times) > 0:
         for i in times:
             if i <= datetime.now():
-                if activeAlarms >= 1:
+                if activeAlarms >= 1 and foundSongs == True:
                     volume += Decimal("0.1")
                     subprocess.Popen(["playerctl", "--all-players", "volume", f"{volume}"])
                     print(f"Volume increased by 0.1, to {volume}")
                 if alarmActive == False:
                     songs = []
-                    for i in os.listdir("/home/cooper/alarm/files/audio"):
+                    for i in os.listdir(f"/home/{os.getlogin()}/alarm/files/audio"):
                         songs.append(i)
-                    subprocess.Popen(["cvlc", "--aout=alsa", "--alsa-audio-device", "hw:1,0", f"/home/cooper/alarm/files/audio/{random.choice(songs)}"])
-                    time.sleep(0.5)
-                    process = subprocess.Popen(["playerctl", "--all-players", "volume", f"{volume}"])
-                    music_pid = process.pid
-                file = open("/home/cooper/alarm/files/alarms.txt", "w")
+                    if foundSongs == False:
+                        if len(songs) > 0:
+                            foundSongs = True
+                    if foundSongs == True:
+                        subprocess.Popen(["cvlc", "--aout=alsa", "--alsa-audio-device", "hw:1,0", f"/home/{os.getlogin()}/alarm/files/audio/{random.choice(songs)}"])
+                        time.sleep(0.5)
+                        process = subprocess.Popen(["playerctl", "--all-players", "volume", f"{volume}"])
+                        music_pid = process.pid
+                file = open(f"/home/{os.getlogin()}/alarm/files/alarms.txt", "w")
                 times.pop(0)
                 activeAlarms += 1
                 if alarmActive == False:
@@ -131,13 +138,14 @@ while True:
             volume = initialVolume
             activeAlarms = 0
             alarmActive = False
-            subprocess.Popen(["playerctl", "--all-players", "volume", f"{initialVolume}"])
-            subprocess.Popen(["playerctl", "--all-players", "stop"])
-            if music_pid != 0:
-                os.kill(music_pid, signal.SIGTERM)
-                subprocess.Popen(["killall", "vlc"])
-                print(f"Killed vlc process with PID {music_pid}")
-                music_pid = 0
+            if foundSongs == True:
+                subprocess.Popen(["playerctl", "--all-players", "volume", f"{initialVolume}"])
+                subprocess.Popen(["playerctl", "--all-players", "stop"])
+                if music_pid != 0:
+                    os.kill(music_pid, signal.SIGTERM)
+                    subprocess.Popen(["killall", "vlc"])
+                    print(f"Killed vlc process with PID {music_pid}")
+                    music_pid = 0
             if len(times) > 0:
                 if times[0].second == 0:
                     nextAlarm = times[0].strftime("%I:%M %p")
