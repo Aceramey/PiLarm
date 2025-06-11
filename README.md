@@ -3,6 +3,8 @@ With this alarm clock you can set as many alarms as you want, with as low as 1 s
 
 3d print files: www.thingiverse.com/thing:7062267
 
+Screen driver I used: https://github.com/SirLefti/Python_ILI9486/tree/main
+
 Supplies:
 Raspberry Pi Zero 2W
 A screen with the ILI9486 driver.
