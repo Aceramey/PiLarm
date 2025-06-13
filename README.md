@@ -2,7 +2,7 @@ A alarm clock made with a Raspberry Pi Zero 2W, a screen, and a USB Speaker
 
 With this alarm clock you can set as many alarms as you want, with as low as 1 second between them, and also have it play any song you want when it goes off.
 
-Put the scripts in your home directory in a folder named alarm for it to work.
+To install, put all the files in the same directory and run setup.sh, it will move files to the folder it needs them in, and set up the venv and rc.local. I have seen a strange issue where setup.sh will hang installing packages (line 11), if this happens, just exit the script and run it again, and it usually works fine the second time.
 
 3d print files: www.thingiverse.com/thing:7062267
 
