@@ -11,11 +11,12 @@ import subprocess
 from decimal import Decimal
 import os
 import signal
+import getpass
 
-if os.path.exists(f"/home/{os.getlogin()}/alarm/files") == False:
-    os.mkdir(f"/home/{os.getlogin()}/alarm/files")
-    os.mkdir(f"/home/{os.getlogin()}/alarm/files/audio")
-    subprocess.Popen(["touch", f"/home/{os.getlogin()}/alarm/files/alarms.txt"])
+if os.path.exists(f"/home/{getpass.getuser()}/alarm/files") == False:
+    os.mkdir(f"/home/{getpass.getuser()}/alarm/files")
+    os.mkdir(f"/home/{getpass.getuser()}/alarm/files/audio")
+    subprocess.Popen(["touch", f"/home/{getpass.getuser()}/alarm/files/alarms.txt"])
 
 #alarm format: 05-07-2025 05:00 PM
 
@@ -42,7 +43,7 @@ print(ip)
 currentTime = ""
 activeAlarms = 0
 alarmActive = False
-initialVolume = Decimal("0.4")
+initialVolume = Decimal("0.7")
 volume = initialVolume
 music_pid = 0
 foundSongs = False
@@ -65,7 +66,7 @@ def updateScreen(active, nextAlarm):
     if "Media-Player" not in os.popen("lsusb").read():
         draw.text((0, 100), "Speaker not detected!!!", font=fontMedium, align="left")
         draw.text((0, 140), "Please plug it in, or unplug and plug it in again", font=fontSmall, align="left")
-    if len(os.listdir(f"/home/{os.getlogin()}/alarm/files/audio")) < 1:
+    if len(os.listdir(f"/home/{getpass.getuser()}/alarm/files/audio")) < 1:
         draw.text((0, 180), "No audio found in files/audio", font=fontSmall, align="left")
         draw.text((0, 200), "please put some music in there", font=fontSmall, align="left")
         draw.text((0, 220), "Or alarms will not play any music.", font=fontSmall, align="left")
@@ -78,7 +79,7 @@ def updateScreen(active, nextAlarm):
 
 while True:
     now = datetime.now().strftime("%I:%M %p")
-    file = open(f"/home/{os.getlogin()}/alarm/files/alarms.txt", "r")
+    file = open(f"/home/{getpass.getuser()}/alarm/files/alarms.txt", "r")
     times = []
     for line in file:
         line = line[:-1]
@@ -105,17 +106,17 @@ while True:
                     print(f"Volume increased by 0.1, to {volume}")
                 if alarmActive == False:
                     songs = []
-                    for i in os.listdir(f"/home/{os.getlogin()}/alarm/files/audio"):
+                    for i in os.listdir(f"/home/{getpass.getuser()}/alarm/files/audio"):
                         songs.append(i)
                     if foundSongs == False:
                         if len(songs) > 0:
                             foundSongs = True
                     if foundSongs == True:
-                        subprocess.Popen(["cvlc", "--aout=alsa", "--alsa-audio-device", "hw:1,0", f"/home/{os.getlogin()}/alarm/files/audio/{random.choice(songs)}"])
+                        subprocess.Popen(["cvlc", "--aout=alsa", "--alsa-audio-device", "hw:1,0", f"/home/{getpass.getuser()}/alarm/files/audio/{random.choice(songs)}"])
                         time.sleep(0.5)
                         process = subprocess.Popen(["playerctl", "--all-players", "volume", f"{volume}"])
                         music_pid = process.pid
-                file = open(f"/home/{os.getlogin()}/alarm/files/alarms.txt", "w")
+                file = open(f"/home/{getpass.getuser()}/alarm/files/alarms.txt", "w")
                 times.pop(0)
                 activeAlarms += 1
                 if alarmActive == False:

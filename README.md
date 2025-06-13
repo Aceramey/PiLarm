@@ -19,4 +19,3 @@ Right angle micro USB extension cable.
 Micro USB extension cable, you may have to bend it to make it fit.
 
 USB speaker, I used this one: https://www.amazon.com/dp/B086JXJ1LF
-
